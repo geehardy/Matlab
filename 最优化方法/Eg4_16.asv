@@ -1,0 +1,75 @@
+clear; clc; close all;
+ % 目标函数及其导数
+f= @(x) x.^4 - 2.*x.^2 + 1;   
+df= @(x) 4*x.^3 - 4*x;
+d2f= @(x) 12*x.^2 - 4;           
+
+x=-10;            % 初始迭代点
+tol= 1e-6;           % 收敛精度
+max_iter= 50;             % 最大迭代次数
+iter = 1;
+history = [];             % 记录迭代过程
+
+while iter <= max_iter
+    % 当前参数
+    fx  = f(x);
+    g   = df(x);
+    G   = d2f(x);
+    % 记录迭代数据
+    history(iter,:) = [iter, x, fx, g, G];
+
+    % 收敛判断：梯度接近0
+    if abs(g) < tol
+        break;
+    end
+
+    % 计算牛顿下降方向
+    d = -g / G;   % 一维牛顿方向 d = - [∇²f]⁻¹ ∇f
+
+    % 抛物线法(三点二次插值)一维搜索求最优步长α
+    a1 = 0;
+    a2 = 0.5;
+    a3 = 1;
+    f1 = f(x + a1*d);
+    f2 = f(x + a2*d);
+    f3 = f(x + a3*d);
+
+    % 抛物线插值公式求近似极小点
+    alpha_num = (a2^2 - a3^2)*f1 + (a3^2 - a1^2)*f2 + (a1^2 - a2^2)*f3;
+    alpha_den = 2*((a2 - a3)*f1 + (a3 - a1)*f2 + (a1 - a2)*f3);
+    
+    if abs(alpha_den) < 1e-12  % 防止分母为0
+        alpha = 1;
+    else
+        alpha = alpha_num / alpha_den;
+    end
+
+    % 步长边界约束(避免步长异常过大)
+    alpha = max(min(alpha,5),0);
+
+    % 更新迭代点
+    x = x + alpha * d;
+
+    iter = iter + 1;
+end
+
+fprintf('\n========== 迭代过程记录表 ==========\n');
+fprintf('次数\t x\t\t f(x)\t\t df(x)\t\t d2f(x)\n');
+for i = 1:size(history,1)
+    fprintf('%d\t %.5f\t %.5f\t %.5f\t %.5f\n',history(i,:));
+end
+
+fprintf('\n========== 最终收敛结果 ==========\n');
+fprintf('最优点 x* = %.6f\n',x);
+fprintf('极小值 f(x*) = %.6f\n',f(x));
+fprintf('迭代总次数 = %d\n',iter-1);
+
+x_plot = linspace(-11,2,500);
+figure('Color','w');
+plot(x_plot,f(x_plot),'b-','LineWidth',1.5); hold on;
+scatter(history(:,2),history(:,3),60,'r','filled');
+plot(history(:,2),history(:,3),'r--','LineWidth',1.2);
+xlabel('x'); ylabel('f(x) = x^4-2x^2+1');
+title('牛顿法+抛物线一维搜索 迭代寻优过程');
+grid on;
+legend('目标函数','迭代路径','Location','best');

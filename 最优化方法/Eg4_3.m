@@ -1,0 +1,37 @@
+clear;clc;
+% 0.618法
+
+f = @(x) 2*(x.^2) - x - 1;
+a = -1;
+b = 1;
+tol = 0.02; % 容忍误差
+[x_min, f_min] = golden_section(f, a, b, tol);
+% 打印结果
+fprintf('迭代完成！\n');
+fprintf('最优解 x = %.3f\n', x_min);
+fprintf('极小值 f(x) = %.3f\n', f_min);
+
+% 函数定义
+function [x_min, f_min] = golden_section(f, a, b, tol)
+debugflag=0;    % 调试标志变量
+rate=0.618;   % 比例
+x1 = a + (1-rate)*(b-a);
+x2 = a + rate*(b-a);
+% fprintf('参数x1=%.3f,x2=%.3f,a=%.3f,b=%.3f \n',x1,x2,a,b);  打印初始轮参数
+while abs(a-b)>tol
+    if f(x1)<=f(x2)
+        b=x2;
+        x2=x1;
+        x1 = a + (1-rate)*(b-a);
+    else  
+        a=x1;
+        x1=x2;
+        x2 = a + rate*(b-a);
+    end
+    if debugflag    % 打印循环轮中的参数，不包含初始轮
+        fprintf('参数x1=%.3f,x2=%.3f,a=%.3f,b=%.3f \n',x1,x2,a,b);
+    end 
+end 
+x_min = (a + b)/2;
+f_min = f(x_min);
+end

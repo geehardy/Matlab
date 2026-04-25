@@ -1,0 +1,10 @@
+num=[1,3];
+den1=[1,6,5];
+den=conv(den1,den1);
+%rlocus(num,den);
+%sgrid;
+num1=110*num;
+sys=tf(num1,den);
+phi=feedback(sys,1,-1);
+step(phi);
+grid on;
